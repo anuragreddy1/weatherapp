@@ -1,4 +1,4 @@
-import React, {useState } from 'react';
+import React, { useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { getCurrentWeather } from '../services/WeatherService';
 import {
@@ -30,9 +30,15 @@ function WeatherChart() {
       setCurrentTemp(temp);
       setError(null);
 
-      // Fake past/future temps for visual variation
-      const labels = ['10 AM', '11 AM', '12 PM', '1 PM', 'Now'];
-      const temps = [temp - 2, temp - 1, temp, temp + 1, temp + 2];
+      // Simulated surrounding data for a smoother curve
+      const labels = ['8 AM', '9 AM', '10 AM', '11 AM', 'Now'];
+      const temps = [
+        temp - 3 + Math.random(),
+        temp - 2 + Math.random(),
+        temp - 1 + Math.random(),
+        temp,
+        temp + 1 + Math.random()
+      ];
 
       setChartData({
         labels: labels,
@@ -43,7 +49,7 @@ function WeatherChart() {
             fill: false,
             borderColor: 'rgb(75, 192, 192)',
             backgroundColor: 'rgb(75, 192, 192)',
-            tension: 0.4,
+            tension: 0.5, // more natural curve
             pointRadius: 5,
             pointHoverRadius: 7
           }
