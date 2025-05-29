@@ -1,6 +1,6 @@
+// WeatherChart.js
 import React, { useState } from 'react';
 import { Line } from 'react-chartjs-2';
-import { getCurrentWeather } from '../services/WeatherService';
 import {
   Chart as ChartJS,
   LineElement,
@@ -14,6 +14,8 @@ import {
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
+const API_KEY = 'dcf428a35b51b285bbea3af873503f79'; // Replace with your OpenWeatherMap API key
+
 function WeatherChart() {
   const [cityInput, setCityInput] = useState('');
   const [cityName, setCityName] = useState('');
@@ -21,27 +23,27 @@ function WeatherChart() {
   const [chartData, setChartData] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchData = async (city) => {
+  const fetchWeather = async (city) => {
     try {
-      const weather = await getCurrentWeather(city);
-      const temp = weather.main.temp;
+      const res = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`
+      );
+      if (!res.ok) throw new Error('City not found');
 
-      setCityName(weather.name);
-      setCurrentTemp(temp);
+      const data = await res.json();
+      setCityName(data.city.name);
       setError(null);
 
-      // Simulated surrounding data for a smoother curve
-      const labels = ['8 AM', '9 AM', '10 AM', '11 AM', 'Now'];
-      const temps = [
-        temp - 3 + Math.random(),
-        temp - 2 + Math.random(),
-        temp - 1 + Math.random(),
-        temp,
-        temp + 1 + Math.random()
-      ];
+      const nextHours = data.list.slice(0, 6); // Next 6 data points (3-hour intervals)
+      const labels = nextHours.map((entry) =>
+        new Date(entry.dt_txt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      );
+      const temps = nextHours.map((entry) => entry.main.temp);
+
+      setCurrentTemp(temps[0]);
 
       setChartData({
-        labels: labels,
+        labels,
         datasets: [
           {
             label: 'Temperature (°C)',
@@ -49,30 +51,29 @@ function WeatherChart() {
             fill: false,
             borderColor: 'rgb(75, 192, 192)',
             backgroundColor: 'rgb(75, 192, 192)',
-            tension: 0.5, // more natural curve
+            tension: 0.4,
             pointRadius: 5,
             pointHoverRadius: 7
           }
         ]
       });
     } catch (err) {
-      setError('City not found. Please try again.');
-      setChartData(null);
-      setCurrentTemp(null);
+      setError('City not found or weather data unavailable.');
       setCityName('');
+      setCurrentTemp(null);
+      setChartData(null);
     }
   };
 
   const handleSearch = () => {
-    if (cityInput.trim() !== '') {
-      fetchData(cityInput.trim());
+    if (cityInput.trim()) {
+      fetchWeather(cityInput.trim());
     }
   };
 
   return (
     <div style={{ width: '90%', margin: 'auto', textAlign: 'center' }}>
       <h2>Weather Dashboard</h2>
-
       <input
         type="text"
         placeholder="Enter city name"
@@ -91,7 +92,11 @@ function WeatherChart() {
           Current Temperature: <strong>{currentTemp} °C</strong>
         </p>
       )}
-      {chartData ? <Line data={chartData} /> : <p style={{ marginTop: '20px' }}>No data to display.</p>}
+      {chartData ? (
+        <Line data={chartData} />
+      ) : (
+        <p style={{ marginTop: '20px' }}>No data to display.</p>
+      )}
     </div>
   );
 }

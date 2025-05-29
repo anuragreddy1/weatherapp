@@ -11,4 +11,4 @@ export async function getHistoricalWeather(lat, lon, timestamp) {
   const response = await fetch(`${BASE_URL}/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timestamp}&appid=${API_KEY}`);
   const data = await response.json();
   return data;
-}
+} 
