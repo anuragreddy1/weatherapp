@@ -16,7 +16,7 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, T
 
 const API_KEY = 'dcf428a35b51b285bbea3af873503f79'; // Replace with your OpenWeatherMap API key
 
-function WeatherChart() {
+function WeatherChart() { 
   const [cityInput, setCityInput] = useState('');
   const [cityName, setCityName] = useState('');
   const [currentTemp, setCurrentTemp] = useState(null);
